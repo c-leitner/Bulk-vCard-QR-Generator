@@ -96,7 +96,7 @@ namespace Bulk_vCard_QR_Generator
                 else
                 {
 
-                    int numberofQRCreated = readExcelFile("C:\\Users\\Clemens\\Documents\\test.xlsx");
+                    int numberofQRCreated = readExcelFile(programState.contacFile);
                     isFinished.Text = numberofQRCreated + " QR-Codes successfully created!";
                     isFinished.Visible = true;
                 }
