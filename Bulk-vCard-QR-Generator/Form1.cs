@@ -37,13 +37,30 @@ namespace Bulk_vCard_QR_Generator
         private void contactPathBox_TextChanged(object sender, EventArgs e)
         {
             isFinished.Visible = false;
-            programState.contacFile = contactPathBox.Text;
+            if (!File.Exists(contactPathBox.Text))
+            {
+                contactPathBox.BackColor = Color.LightCoral;
+            }
+            else
+            {
+                contactPathBox.BackColor = SystemColors.Window;
+                programState.contacFile = contactPathBox.Text;
+            } 
         }
 
         private void outPutFolderBox_TextChanged(object sender, EventArgs e)
         {
             isFinished.Visible = false;
-            programState.outputPath = outPutFolderBox.Text;
+            if(!Directory.Exists(outPutFolderBox.Text))
+            {
+                outPutFolderBox.BackColor = Color.LightCoral;
+            }
+            else
+            {
+                outPutFolderBox.BackColor = SystemColors.Window;
+                programState.outputPath = outPutFolderBox.Text;
+            }
+            
         }
 
 
@@ -121,7 +138,7 @@ namespace Bulk_vCard_QR_Generator
                     var qr = QrCode.EncodeText("BEGIN:VCARD\nVERSION:3.0\nN:" + record.lastName + ";" + record.firstName + ";;" + record.prefix + ";" + record.suffix + "\nFN:" + record.prefix + " " + record.firstName + " " + record.lastName + ", " + record.suffix + "\nORG:SMATRICS GmbH & Co. KG\nTITLE" + record.position + "\nTEL;TYPE=WORK,VOICE:" + record.tel + "\nEMAIL;TYPE=PREF,INTERNET:" + record.email + "\nURL:" + record.linkedin + "\nREV:2014-03-01T22:11:10Z\nEND:VCARD", QrCode.Ecc.Medium);
                     string filenameWithPath = programState.outputPath + @"\" + record.lastName + "_" + record.firstName + ".png";
                     Console.WriteLine(filenameWithPath);
-                    qr.SaveAsPng(filenameWithPath, 10, 20);
+                    qr.SaveAsPng(filenameWithPath, 10, programState.borderSize, programState.foreGroundColor, programState.backGroundColor);
                 }
                 i++;
             }
@@ -149,6 +166,98 @@ namespace Bulk_vCard_QR_Generator
             }
         }
 
+        private void foregroundColorButton_Click(object sender, EventArgs e)
+        {
+            ColorDialog MyDialog = new ColorDialog();
+            MyDialog.Color = foregroundColorButton.BackColor;
+            if (MyDialog.ShowDialog() == DialogResult.OK)
+            {
+                foregroundColorButton.BackColor = MyDialog.Color;
+                programState.foreGroundColor = MyDialog.Color;
+                foreGroundColorHEX.Text = ColorToHex(MyDialog.Color);
+            }
+        }
+        private void foreGroundColorHEX_TextChanged(object sender, EventArgs e)
+        {
+            Color calculatedColor = HexToColor(foreGroundColorHEX.Text);
+            programState.foreGroundColor = calculatedColor;
+            foregroundColorButton.BackColor = calculatedColor;
+        }
+
+
+        private void backGroundColorButton_Click(object sender, EventArgs e)
+        {
+            ColorDialog MyDialog = new ColorDialog();
+            MyDialog.Color = backGroundColorButton.BackColor;
+            if (MyDialog.ShowDialog() == DialogResult.OK)
+            {
+                backGroundColorButton.BackColor = MyDialog.Color;
+                programState.backGroundColor = MyDialog.Color;
+                backGroundColorHEX.Text = ColorToHex(MyDialog.Color);
+            }
+        }
+
+        private void backGroundColorHEX_TextChanged(object sender, EventArgs e)
+        {
+            Color calculatedColor = HexToColor(backGroundColorHEX.Text);
+            programState.backGroundColor = calculatedColor;
+            backGroundColorButton.BackColor = calculatedColor;
+        }
+
+
+
+        private Color HexToColor(String hexString)
+        {
+            Color actColor;
+            int r, g, b;
+            r = 0;
+            g = 0;
+            b = 0;
+            if ((hexString.StartsWith("#")) && (hexString.Length == 7))
+            {
+                r = HexToInt(hexString.Substring(1, 2));
+                g = HexToInt(hexString.Substring(3, 2));
+                b = HexToInt(hexString.Substring(5, 2));
+                actColor = Color.FromArgb(r, g, b);
+            }
+            else
+            {
+                actColor = Color.White;
+            }
+            return actColor;
+        }
+        private String ColorToHex(Color actColor)
+        {
+            return "#" + actColor.R.ToString("X2") + actColor.G.ToString("X2") + actColor.B.ToString("X2");
+        }
+
+        private int HexToInt(String hexString)
+        {
+            return int.Parse(hexString, System.Globalization.NumberStyles.HexNumber);
+        }
+
+        private void borderSize_TextChanged(object sender, EventArgs e)
+        {
+            if (int.TryParse(borderSize.Text, out int output))
+            {
+                programState.borderSize = output;
+                borderSize.BackColor = SystemColors.Window;
+            }
+            else
+            {
+                borderSize.BackColor = Color.LightCoral;
+            }
+        }
+
+        private void foreGroundLabel_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void BackgroundLabel_Click(object sender, EventArgs e)
+        {
+
+        }
 
 
     }
@@ -157,6 +266,9 @@ namespace Bulk_vCard_QR_Generator
     {
         public static string outputPath = "";
         public static string contacFile = "";
+        public static Color foreGroundColor = Color.Black;
+        public static Color backGroundColor = Color.White;
+        public static int borderSize = 10;
     }
 
     public class Person
