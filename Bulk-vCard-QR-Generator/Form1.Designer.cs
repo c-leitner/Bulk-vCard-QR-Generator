@@ -170,6 +170,7 @@
             // BackgroundLabel
             // 
             BackgroundLabel.AutoSize = true;
+            BackgroundLabel.ForeColor = SystemColors.ControlText;
             BackgroundLabel.Location = new Point(12, 117);
             BackgroundLabel.Name = "BackgroundLabel";
             BackgroundLabel.Size = new Size(128, 20);

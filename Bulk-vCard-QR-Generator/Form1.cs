@@ -1,4 +1,3 @@
-using Excel = Microsoft.Office.Interop.Excel;
 using System.Windows.Forms;
 using System.Text;
 using System.Security.Policy;
@@ -7,9 +6,9 @@ using System;
 using System.IO;
 using Net.Codecrete.QrCodeGenerator;
 using System.Drawing;
-
-
-
+using ClosedXML;
+using ClosedXML.Excel;
+using System.Reflection.Emit;
 
 namespace Bulk_vCard_QR_Generator
 {
@@ -18,7 +17,11 @@ namespace Bulk_vCard_QR_Generator
         public Form1()
         {
             InitializeComponent();
+            // AllocConsole();
         }
+        //  [DllImport("kernel32.dll", SetLastError = true)]
+        //  [return: MarshalAs(UnmanagedType.Bool)]
+        //  static extern bool AllocConsole();
 
         private void chooseContactList_Click(object sender, EventArgs e)
         {
@@ -45,13 +48,13 @@ namespace Bulk_vCard_QR_Generator
             {
                 contactPathBox.BackColor = SystemColors.Window;
                 programState.contacFile = contactPathBox.Text;
-            } 
+            }
         }
 
         private void outPutFolderBox_TextChanged(object sender, EventArgs e)
         {
             isFinished.Visible = false;
-            if(!Directory.Exists(outPutFolderBox.Text))
+            if (!Directory.Exists(outPutFolderBox.Text))
             {
                 outPutFolderBox.BackColor = Color.LightCoral;
             }
@@ -60,7 +63,7 @@ namespace Bulk_vCard_QR_Generator
                 outPutFolderBox.BackColor = SystemColors.Window;
                 programState.outputPath = outPutFolderBox.Text;
             }
-            
+
         }
 
 
@@ -97,52 +100,54 @@ namespace Bulk_vCard_QR_Generator
                 {
 
                     int numberofQRCreated = readExcelFile(programState.contacFile);
+                    Color sucessColor = Color.FromArgb(0, 192, 0);
+                    isFinished.ForeColor = sucessColor;
+                    isFinished.Font = new Font("Segoe UI Semibold", 9F, FontStyle.Bold, GraphicsUnit.Point);
                     isFinished.Text = numberofQRCreated + " QR-Codes successfully created!";
                     isFinished.Visible = true;
                 }
             }
         }
 
-        private string readCell(int row, int collumn, Excel.Worksheet ws)
-        {
-            return Convert.ToString(ws.Cells[row, collumn].Value);
-        }
+
         private int readExcelFile(string filePath)
         {
+            var workbook = new XLWorkbook(new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
+            var worksheet = workbook.Worksheet(1);
 
-            Excel.Application excelFile = new Excel.Application();
-            Excel.Workbook wb;
-            Excel.Worksheet ws;
+            int lastRowUsed = worksheet.LastRowUsed().RowNumber();
+            int totalNumberQR = lastRowUsed - 1;
+            var rows = worksheet.Rows(2, lastRowUsed);
+            int rowcounter = 0;
 
-            wb = excelFile.Workbooks.Open(filePath);
-            ws = wb.Worksheets[1];
-            Excel.Range usedRange = ws.UsedRange;
-            int i = 1;
-            foreach (Excel.Range row in usedRange.Rows)
+            foreach (var row in rows)
             {
-                if (i != 1)
+                Person record = new Person
                 {
-                    Person record = new Person
-                    {
-                        prefix = readCell(i, 1, ws),
-                        firstName = readCell(i, 2, ws),
-                        lastName = readCell(i, 3, ws),
-                        suffix = readCell(i, 4, ws),
-                        company = readCell(i, 5, ws),
-                        position = readCell(i, 6, ws),
-                        tel = readCell(i, 7, ws),
-                        email = readCell(i, 8, ws),
-                        linkedin = readCell(i, 9, ws)
-                    };
+                    prefix = row.Cell(1).GetValue<string>(),
+                    firstName = row.Cell(2).GetValue<string>(),
+                    lastName = row.Cell(3).GetValue<string>(),
+                    suffix = row.Cell(4).GetValue<string>(),
+                    company = row.Cell(5).GetValue<string>(),
+                    position = row.Cell(6).GetValue<string>(),
+                    tel = row.Cell(7).GetValue<string>(),
+                    email = row.Cell(8).GetValue<string>(),
+                    linkedin = row.Cell(9).GetValue<string>()
+                };
+                Console.WriteLine(record.firstName);
+                var qr = QrCode.EncodeText("BEGIN:VCARD\nVERSION:3.0\nN:" + record.lastName + ";" + record.firstName + ";;" + record.prefix + ";" + record.suffix + "\nFN:" + record.prefix + " " + record.firstName + " " + record.lastName + ", " + record.suffix + "\nORG:SMATRICS GmbH & Co. KG\nTITLE:" + record.position + "\nTEL;TYPE=WORK,VOICE:" + record.tel + "\nEMAIL;TYPE=PREF,INTERNET:" + record.email + "\nURL:" + record.linkedin + "\nREV:2014-03-01T22:11:10Z\nEND:VCARD", QrCode.Ecc.Medium);
+                string filenameWithPath = programState.outputPath + @"\" + record.lastName + "_" + record.firstName + ".png";
+                Console.WriteLine(filenameWithPath);
+                qr.SaveAsPng(filenameWithPath, 10, programState.borderSize, programState.foreGroundColor, programState.backGroundColor);
 
-                    var qr = QrCode.EncodeText("BEGIN:VCARD\nVERSION:3.0\nN:" + record.lastName + ";" + record.firstName + ";;" + record.prefix + ";" + record.suffix + "\nFN:" + record.prefix + " " + record.firstName + " " + record.lastName + ", " + record.suffix + "\nORG:SMATRICS GmbH & Co. KG\nTITLE" + record.position + "\nTEL;TYPE=WORK,VOICE:" + record.tel + "\nEMAIL;TYPE=PREF,INTERNET:" + record.email + "\nURL:" + record.linkedin + "\nREV:2014-03-01T22:11:10Z\nEND:VCARD", QrCode.Ecc.Medium);
-                    string filenameWithPath = programState.outputPath + @"\" + record.lastName + "_" + record.firstName + ".png";
-                    Console.WriteLine(filenameWithPath);
-                    qr.SaveAsPng(filenameWithPath, 10, programState.borderSize, programState.foreGroundColor, programState.backGroundColor);
-                }
-                i++;
+                isFinished.Text = rowcounter + " of " + totalNumberQR + " QR-Codes created.";
+                isFinished.ForeColor = SystemColors.ControlText;
+                isFinished.Font = new Font("Segoe UI Semibold", 9F,FontStyle.Regular, GraphicsUnit.Point);
+                isFinished.Visible = true;
+                isFinished.Refresh();
+                rowcounter++;
             }
-            return i - 2;
+            return rowcounter;
         }
 
 
