@@ -38,7 +38,7 @@ jobs:
           # Pack files
           if [ "${{ matrix.target }}" == "win-x64" ]; then
             # Pack to zip for Windows
-            7z a -tzip "${release_name}.zip" "./${release_name}/${release_name}.exe" "README.md" "Example.xlsx"
+            7z a -tzip "${release_name}.zip" "./${release_name}/$Bulk-vCard-QR-Generator.exe" "README.md" "Example.xlsx"
           else
            tar czvf "${release_name}.tar.gz" "$release_name"
           fi
