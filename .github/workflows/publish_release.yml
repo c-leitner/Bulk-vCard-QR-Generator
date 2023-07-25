@@ -31,7 +31,7 @@ jobs:
           release_name="App-$tag-${{ matrix.target }}"
 
           # Build everything
-          dotnet publish Bulk-vCard-QR-Generator/Bulk-vCard-QR-Generator.csproj --framework net6.0 --runtime "${{ matrix.target }}" -c Release -o "$release_name"
+          dotnet publish Bulk-vCard-QR-Generator/Bulk-vCard-QR-Generator.csproj --framework net6.0-windows --runtime "${{ matrix.target }}" -c Release -o "$release_name"
 
           # Pack files
           if [ "${{ matrix.target }}" == "win-x64" ]; then
