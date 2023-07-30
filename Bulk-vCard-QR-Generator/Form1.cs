@@ -9,6 +9,7 @@ using System.Drawing;
 using ClosedXML;
 using ClosedXML.Excel;
 using System.Reflection.Emit;
+using DocumentFormat.OpenXml.ExtendedProperties;
 
 namespace Bulk_vCard_QR_Generator
 {
@@ -135,7 +136,7 @@ namespace Bulk_vCard_QR_Generator
                     linkedin = row.Cell(9).GetValue<string>()
                 };
                 Console.WriteLine(record.firstName);
-                var qr = QrCode.EncodeText("BEGIN:VCARD\nVERSION:3.0\nN:" + record.lastName + ";" + record.firstName + ";;" + record.prefix + ";" + record.suffix + "\nFN:" + record.prefix + " " + record.firstName + " " + record.lastName + ", " + record.suffix + "\nORG:SMATRICS GmbH & Co. KG\nTITLE:" + record.position + "\nTEL;TYPE=WORK,VOICE:" + record.tel + "\nEMAIL;TYPE=PREF,INTERNET:" + record.email + "\nURL:" + record.linkedin + "\nREV:2014-03-01T22:11:10Z\nEND:VCARD", QrCode.Ecc.Medium);
+                var qr = QrCode.EncodeText("BEGIN:VCARD\nVERSION:3.0\nN:" + record.lastName + ";" + record.firstName + ";;" + record.prefix + ";" + record.suffix + "\nFN:" + record.prefix + " " + record.firstName + " " + record.lastName + ", " + record.suffix + "\nORG:"+ record.company + "\nTITLE:" + record.position + "\nTEL;TYPE=WORK,VOICE:" + record.tel + "\nEMAIL;TYPE=PREF,INTERNET:" + record.email + "\nURL:" + record.linkedin + "\nREV:2014-03-01T22:11:10Z\nEND:VCARD", QrCode.Ecc.Medium);
                 string filenameWithPath = programState.outputPath + @"\" + record.lastName + "_" + record.firstName + ".png";
                 Console.WriteLine(filenameWithPath);
                 qr.SaveAsPng(filenameWithPath, 10, programState.borderSize, programState.foreGroundColor, programState.backGroundColor);
