@@ -11,3 +11,6 @@ This repository contains a program for generating QR Codes that encapsulate vCar
 The program will then generate QR Codes saved as PNG files. Each QR Code represents a contact's details, formatted as a vCard (version 3.0). They will be placed in the chosen output directory.
 
 Please feel free to contribute to this repository or report any issues you encounter. Your feedback is much appreciated!
+
+## Screenshots
+![Screenshot of program](/screenshots/screenshot.png?raw=true "Main interface")
